@@ -6,15 +6,19 @@ import { Environment } from './Environment';
 import { useGameStore } from '../hooks/useGameStore';
 import { JumpscareOverlay } from './JumpscareOverlay';
 import { HUD } from './HUD';
+import { PauseMenu } from './PauseMenu';
 import * as THREE from 'three';
 
 function HorrorEntity() {
   const tension = useGameStore((state) => state.tension);
+  const isPaused = useGameStore((state) => state.isPaused);
   const triggerJumpscare = useGameStore((state) => state.triggerJumpscare);
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState<[number, number, number]>([0, 0, -5]);
 
   useEffect(() => {
+    if (isPaused) return;
+
     const interval = setInterval(() => {
       if (Math.random() < 0.05 && tension > 30) {
         setVisible(true);
@@ -36,7 +40,7 @@ function HorrorEntity() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [tension, triggerJumpscare]);
+  }, [tension, triggerJumpscare, isPaused]);
 
   if (!visible) return null;
 
@@ -51,15 +55,29 @@ function HorrorEntity() {
 export default function Game() {
   const increaseTension = useGameStore((state) => state.increaseTension);
   const setSanity = useGameStore((state) => state.setSanity);
+  const saveProgress = useGameStore((state) => state.saveProgress);
   const sanity = useGameStore((state) => state.sanity);
+  const isPaused = useGameStore((state) => state.isPaused);
 
   useEffect(() => {
+    if (isPaused) return;
+
     const interval = setInterval(() => {
       increaseTension(1);
       if (sanity > 0) setSanity(sanity - 0.1);
     }, 2000);
     return () => clearInterval(interval);
-  }, [increaseTension, setSanity, sanity]);
+  }, [increaseTension, setSanity, sanity, isPaused]);
+
+  // Periodic Save
+  useEffect(() => {
+    if (isPaused) return;
+
+    const saveInterval = setInterval(() => {
+      saveProgress();
+    }, 10000); // Save every 10 seconds
+    return () => clearInterval(saveInterval);
+  }, [saveProgress, isPaused]);
 
   return (
     <div className="w-full h-screen bg-black">
@@ -73,10 +91,11 @@ export default function Game() {
         </Canvas>
       </Suspense>
       <HUD />
+      <PauseMenu />
       <JumpscareOverlay />
       
       {/* Audio Elements */}
-      <audio autoPlay loop src="https://actions.google.com/sounds/v1/horror/horror_ambient_loop.ogg" />
+      <audio autoPlay loop muted={isPaused} src="https://www.soundjay.com/nature/sounds/wind-howl-01.mp3" />
     </div>
   );
 }

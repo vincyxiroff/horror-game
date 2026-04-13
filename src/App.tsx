@@ -3,18 +3,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Game from './components/Game';
+import { Auth } from './components/Auth';
+import { useGameStore } from './hooks/useGameStore';
+import { auth } from './lib/firebase';
+import { signOut } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Skull, Info } from 'lucide-react';
+import { Play, Skull, Info, LogOut, User } from 'lucide-react';
 
 export default function App() {
   const [gameStarted, setGameStarted] = useState(false);
+  const user = useGameStore((state) => state.user);
+  const setUser = useGameStore((state) => state.setUser);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+    setGameStarted(false);
+  };
 
   return (
     <main className="w-full h-screen bg-black overflow-hidden select-none">
       <AnimatePresence mode="wait">
-        {!gameStarted ? (
+        {!user ? (
+          <Auth key="auth" />
+        ) : !gameStarted ? (
           <motion.div
             key="start-screen"
             initial={{ opacity: 0 }}
@@ -22,10 +36,25 @@ export default function App() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center h-full text-white p-6 relative"
           >
+            {/* User Info */}
+            <div className="absolute top-8 right-8 flex items-center gap-4 z-20">
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] uppercase tracking-widest opacity-50">Authenticated as</span>
+                <span className="text-xs font-bold">{user.email || user.phoneNumber || 'Survivor'}</span>
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="p-2 bg-white/5 hover:bg-red-600/20 border border-white/10 rounded-full transition-colors"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+
             {/* Background Atmosphere */}
             <div className="absolute inset-0 z-0 opacity-20">
               <img 
-                src="https://picsum.photos/seed/abandoned_house/1920/1080?grayscale&blur=10" 
+                src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop" 
                 alt="Background" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"

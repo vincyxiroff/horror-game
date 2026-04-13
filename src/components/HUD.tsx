@@ -8,6 +8,7 @@ export function HUD() {
   const sanity = useGameStore((state) => state.sanity);
   const tension = useGameStore((state) => state.tension);
   const isFlashlightOn = useGameStore((state) => state.isFlashlightOn);
+  const isPaused = useGameStore((state) => state.isPaused);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'model', text: string }[]>([]);
   const [input, setInput] = useState('');
@@ -50,6 +51,8 @@ export function HUD() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  if (isPaused) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 flex flex-col justify-between p-8 font-mono text-white">
