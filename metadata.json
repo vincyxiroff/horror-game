@@ -1,0 +1,6 @@
+{
+  "name": "Shadows of the Abandoned",
+  "description": "A realistic first-person horror game set in a dark, abandoned house. Explore, survive, and find your way out while managing your sanity and avoiding the entities that lurk in the shadows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["3D Graphics", "Real-time Audio", "AI Chatbot"]
+}
